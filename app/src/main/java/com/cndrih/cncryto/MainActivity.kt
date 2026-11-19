@@ -196,7 +196,7 @@ class MainActivity : ComponentActivity() {
                             } }
                             item { Text("Watchlist", style = MaterialTheme.typography.titleLarge) }
                             item { Text("BTCUSDT   •   ETHUSDT   •   EURUSD   •   XAUUSD", color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                            item { Text("No live prices or verified trade signals are shown until a market-data source is connected.", style = MaterialTheme.typography.bodySmall) }
+                            item { Text("Market quotes and historical data are retrieved in the Markets tab. AI analysis only receives successfully retrieved public history; configure the optional Alpha Vantage key in Settings for equities and commodities.", style = MaterialTheme.typography.bodySmall) }
                             item { Text("Trading involves substantial risk. AI output is not financial advice and no orders are executed.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                         }
                     } else if (tab == 4) {
