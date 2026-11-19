@@ -9,7 +9,7 @@ on:
 
 # Prevent concurrent APK publishers from racing to update the root APK.
 concurrency:
-  group: cncryto-android-${{ github.ref }}
+  group: cncryto-android-v2-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
