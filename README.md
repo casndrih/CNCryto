@@ -1,14 +1,14 @@
 # CNCryto
 
 **AI-assisted multi-market analysis for Android**  
-Kotlin · Jetpack Compose · Material 3 · Coroutines · OpenAI-compatible model endpoints
+Kotlin · Jetpack Compose · Material 3 · Chaquopy Python 3.13 · NumPy · pandas · OpenAI-compatible model endpoints
 
 [![Android CI](https://github.com/casndrih/CNCryto/actions/workflows/android-build.yml/badge.svg)](https://github.com/casndrih/CNCryto/actions/workflows/android-build.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
 CNCryto is an Android application foundation for market research, model-assisted forecasts, signal workflows, risk analysis and (planned) backtesting and paper trading. The project is designed around a provider-neutral prediction interface so several AI models can be queried concurrently and their outputs combined.
 
-> **Development status: early MVP, not a live trading system.** The checked-in app currently provides a basic Compose analysis screen, configurable OpenAI-compatible provider profiles, encrypted local credential storage, and a concurrent weighted-consensus engine. It does not yet contain the original `forex_signal_system` Python package, live multi-asset market-data adapters, persistent prediction calibration, a broker connection, or order execution. See [implementation status](docs/IMPLEMENTATION.md).
+> **Development status: functional analytics MVP, not a live trading system.** The app now bundles the supplied `forex_signal_system` package through Chaquopy, with signal parsing, risk validation, OHLCV CSV regime analysis, historical backtesting and a local SQLite signal journal. Market data is imported by the user; no live feed or broker execution is connected. See [implementation status](docs/IMPLEMENTATION.md).
 
 ## Contents
 
@@ -42,7 +42,12 @@ CNCryto is an Android application foundation for market research, model-assisted
 - Reliability-weighted directional consensus engine with neutral prior.
 - EncryptedSharedPreferences backed by Android Keystore for provider credentials.
 - HTTP call timeouts and HTTPS-by-default endpoint validation (private/local HTTP endpoints are permitted for local models).
-- GitHub Actions build, unit-test, APK artifact upload and root APK publication.
+- Chaquopy Python 3.13 runtime with NumPy and pandas for the bundled analytics engine.
+- XTrend Speed signal parsing from copied text or structured JSON.
+- Direction-aware stop/target checks, reward-to-risk validation and fixed-fractional position sizing.
+- Historical OHLCV CSV import, market-regime detection and event-driven backtesting.
+- Local SQLite signal journal with history lookup.
+- GitHub Actions Python regression tests, Android build, APK artifact upload and root APK publication.
 
 ### Planned capabilities
 
@@ -111,8 +116,9 @@ See [AI ensemble design](docs/ai-ensemble.md).
 
 - Android Studio with Android SDK Platform 35 installed.
 - JDK 17.
+- Python 3.13 on PATH (Chaquopy build and source preparation).
 - Gradle 8.9 (the CI workflow provisions it automatically).
-- Android device or emulator running Android 7.0 / API 24 or later.
+- 64-bit ARM Android device running Android 7.0 / API 24 or later (the packaged Python ABI is `arm64-v8a`).
 - An API key for at least one compatible model endpoint to generate model forecasts.
 
 ## Build and run
@@ -130,8 +136,7 @@ See [AI ensemble design](docs/ai-ensemble.md).
 With Gradle 8.9 and JDK 17 installed:
 
 ```bash
-gradle --no-daemon assembleDebug assembleRelease
-gradle --no-daemon testDebugUnitTest
+gradle --no-daemon assembleDebug assembleRelease testDebugUnitTest
 ```
 
 Debug APK output:
@@ -177,6 +182,14 @@ http://192.168.1.10:11434/v1
 
 Use HTTPS for remote services. Do not paste real API keys into source files, issues, screenshots or commits. Keys are stored locally using Android encrypted preferences. The app does not proxy requests through a CNCryto backend.
 
+## Python forex engine
+
+Open the **Engine** tab to check the bundled Python runtime, paste XTrend Speed signals, validate a setup and calculate a risk-based position size, import OHLCV CSV data, inspect the current market regime, run a historical backtest and save/load the local signal journal. CSV files must contain `timestamp,open,high,low,close`; `volume` is optional. Use ISO-8601 timestamps, preferably UTC. The regime detector requires at least 60 candles.
+
+The original package is retained as `forex_signal_system.zip`. The Gradle `preBuild` task extracts its Python modules and applies documented Android compatibility and risk-safety fixes into an ignored generated source directory. Chaquopy bundles Python 3.13, NumPy 1.26.2 and pandas 2.1.3. See [Python engine integration](docs/python-engine.md).
+
+The app currently uses user-imported CSV data only. The Python package's Yahoo adapter is not enabled in the Android build because `yfinance` and its dependency chain are not bundled. No live price feed is implied by the analysis UI.
+
 ## Tests
 
 Run JVM unit tests:
@@ -191,7 +204,7 @@ Build and test together:
 gradle --no-daemon assembleDebug testDebugUnitTest
 ```
 
-The CI workflow runs these commands on every push and pull request. Current tests cover only the existing JVM-level code; they do not establish market prediction accuracy, Python bridge compatibility, broker correctness or live trading safety.
+The CI workflow runs eight Python engine regression tests plus JVM tests and debug/release Android builds on every push and pull request. These tests cover the bridge, parser, risk gates, CSV regime analysis, backtesting and local journal on the host Python runtime; they do not establish live-market prediction accuracy, Android-device runtime compatibility, broker correctness or trading safety.
 
 ## Security
 
@@ -206,12 +219,12 @@ The CI workflow runs these commands on every push and pull request. Current test
 
 The specification in the original project brief is broader than the current checked-in code. The following are not yet delivered:
 
-- The referenced `forex_signal_system` Python source package was not available in this repository or the uploaded project files. Chaquopy is therefore not configured and no Python integration is claimed.
-- No live market-data source is wired into the analysis prompt. Without verified candles, forecasts must not be treated as market signals.
+- The supplied Python package is integrated through Chaquopy. Its Yahoo Finance adapter is not enabled in Android; current market data enters through user-imported OHLCV CSV files.
+- No automatic live market-data source is wired into the AI analysis prompt. Without verified candles, forecasts must not be treated as market signals.
 - Provider reliability is a neutral placeholder, not historical model accuracy calibration.
 - Only OpenAI-compatible chat-completions protocol is implemented.
 - Room persistence, Hilt dependency injection, full MVVM/use-case layers, signal journal and prediction history are not yet implemented.
-- No strategy editor, charting, economic calendar, news/RAG, backtest engine, portfolio sync or paper-trading engine is currently shipped.
+- No strategy editor, charting, economic calendar, news/RAG, portfolio sync or paper-trading engine is currently shipped. The historical backtest engine is available for imported CSV data.
 - No broker integration or automatic order execution is included.
 - No signed release APK or Play Store distribution configuration is supplied.
 
