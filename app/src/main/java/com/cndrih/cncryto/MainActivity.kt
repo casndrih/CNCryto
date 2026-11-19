@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -118,6 +119,12 @@ class MainActivity : ComponentActivity() {
                                     selectedIconColor = Lime, selectedTextColor = if (darkMode) Lime else Dark.primary,
                                     indicatorColor = if (darkMode) Color(0xFF26300F) else Color(0xFFE5F2C9)
                                 ))
+                            NavigationBarItem(selected = tab == 2, onClick = { tab = 2 },
+                                icon = { Icon(Icons.Default.ListAlt, null) }, label = { Text("Engine") },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = Lime, selectedTextColor = if (darkMode) Lime else Dark.primary,
+                                    indicatorColor = if (darkMode) Color(0xFF26300F) else Color(0xFFE5F2C9)
+                                ))
                         }
                     }
                 ) { pad ->
@@ -164,7 +171,7 @@ class MainActivity : ComponentActivity() {
                             item { Text("No live prices or verified trade signals are shown until a market-data source is connected.", style = MaterialTheme.typography.bodySmall) }
                             item { Text("Trading involves substantial risk. AI output is not financial advice and no orders are executed.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                         }
-                    } else {
+                    } else if (tab == 1) {
                         LazyColumn(Modifier.fillMaxSize().padding(pad).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             item {
                                 Text("AI providers", style = MaterialTheme.typography.headlineLarge)
@@ -244,6 +251,8 @@ class MainActivity : ComponentActivity() {
                                 Text("Provider API keys remain encrypted on this device. Native vendor-specific APIs that do not implement the OpenAI-compatible /models and /chat/completions routes need dedicated adapters.", style = MaterialTheme.typography.bodySmall)
                             }
                         }
+                    } else {
+                        ForexEngineScreen(Modifier.fillMaxSize().padding(pad))
                     }
                 }
             }
