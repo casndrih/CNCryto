@@ -130,7 +130,7 @@ See [AI ensemble design](docs/ai-ensemble.md).
 With Gradle 8.9 and JDK 17 installed:
 
 ```bash
-gradle --no-daemon assembleDebug
+gradle --no-daemon assembleDebug assembleRelease
 gradle --no-daemon testDebugUnitTest
 ```
 
@@ -144,7 +144,7 @@ The debug application ID has the `.debug` suffix, so it can be installed alongsi
 
 ### CI build
 
-Pushes and pull requests to `main` run the Android build workflow. On a push to `main`, CI uploads the APK artifact and commits the generated `CNCryto-debug.apk` to the repository root. Pull-request builds do not publish an APK into the branch.
+Pushes and pull requests to `main` run debug and R8-minified release builds plus JVM unit tests. CI uploads both APK artifacts; on a push to `main`, it also commits the generated `CNCryto-debug.apk` to the repository root. The release artifact is unsigned and intended for shrinker/build verification, not direct distribution. Pull-request builds do not publish an APK into the branch.
 
 - [Latest workflow runs](https://github.com/casndrih/CNCryto/actions)
 - [Download latest debug APK](https://github.com/casndrih/CNCryto/blob/main/CNCryto-debug.apk)
