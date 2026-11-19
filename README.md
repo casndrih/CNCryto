@@ -83,24 +83,26 @@ Use cases
 
 ```text
 CNCryto/
-├── .github/workflows/       # Android CI and APK publication
+├── .github/workflows/                 # Python + Android CI and APK publication
 ├── app/
 │   └── src/
 │       ├── main/
-│       │   ├── AndroidManifest.xml
-│       │   └── java/com/cndrih/cncryto/
-│       │       ├── MainActivity.kt
-│       │       ├── ProviderVault.kt
-│       │       └── ai/EnsembleEngine.kt
-│       └── test/            # JVM unit tests
+│       │   ├── java/com/cndrih/cncryto/
+│       │   │   ├── MainActivity.kt
+│       │   │   ├── ForexEngineScreen.kt
+│       │   │   ├── PythonForexEngine.kt
+│       │   │   ├── ProviderVault.kt
+│       │   │   └── ai/EnsembleEngine.kt
+│       │   └── python/cncryto_bridge.py
+│       └── test/                      # JVM unit tests
 ├── docs/
 │   ├── IMPLEMENTATION.md
 │   ├── python-engine.md
 │   └── ai-ensemble.md
-├── forex_signal_system.zip
-├── scripts/prepare_python_engine.py
-├── tests/python/test_bridge.py
-├── CNCryto-debug.apk        # Latest CI-published debug build
+├── forex_signal_system.zip            # Original supplied Python package
+├── scripts/prepare_python_engine.py   # Build-time extraction and fixes
+├── tests/python/test_bridge.py        # Python regression tests
+├── CNCryto-debug.apk                  # Latest CI-published debug build
 ├── build.gradle.kts
 ├── settings.gradle.kts
 └── README.md
