@@ -53,15 +53,9 @@ val prepareForexPython by tasks.registering(org.gradle.api.tasks.Exec::class) {
         "--dest", file("src/main/python").absolutePath)
     inputs.file(pythonScript)
     inputs.file(sourceArchive)
-    outputs.dir(file("src/main/python/forex_signal_system"))
 }
 
 tasks.named("preBuild").configure { dependsOn(prepareForexPython) }
-tasks.configureEach {
-    if (name.endsWith("PythonSources")) {
-        dependsOn(prepareForexPython)
-    }
-}
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
