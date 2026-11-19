@@ -8,3 +8,9 @@ local.properties
 .env
 .DS_Store
 *.log
+
+# Python sources are generated from the versioned archive during Android builds.
+app/src/main/python/forex_signal_system/
+app/src/main/python/__pycache__/
+**/__pycache__/
+*.py[cod]
