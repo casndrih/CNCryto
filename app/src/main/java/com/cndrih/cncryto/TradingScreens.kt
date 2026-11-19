@@ -86,32 +86,47 @@ private object TradeStore {
 fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
     var category by remember { mutableStateOf("Forex") }
     var search by remember { mutableStateOf("") }
-    val instruments = when (category) {
-        "Crypto" -> listOf("BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD")
-        "Metals" -> listOf("XAU/USD", "XAG/USD", "WTI/USD", "BRENT")
-        "Equities" -> listOf("S&P 500", "NASDAQ 100", "DOW 30", "Russell 2000")
-        else -> listOf("EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "NZD/USD")
+    var quotes by remember(category) { mutableStateOf<List<MarketQuote>>(emptyList()) }
+    var yields by remember { mutableStateOf<List<BondYield>>(emptyList()) }
+    var loading by remember(category) { mutableStateOf(true) }
+    var error by remember(category) { mutableStateOf<String?>(null) }
+    var refreshed by remember { mutableStateOf(0) }
+
+    LaunchedEffect(category, refreshed) {
+        loading = true
+        error = null
+        try {
+            quotes = MarketDataRepository.quotes(category)
+            if (category == "Forex" || category == "Equities") {
+                yields = MarketDataRepository.treasuryYields()
+            }
+            if (quotes.none { it.price != null }) error = "The selected public data source did not return usable quotes. Pull to refresh or try another market."
+        } catch (t: Throwable) {
+            error = t.message ?: "Unable to load market data."
+        } finally { loading = false }
     }
+
     LazyColumn(modifier.fillMaxSize().padding(horizontal = 18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
             Spacer(Modifier.height(12.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
                     Text("Markets", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                    Text("Your market overview", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Public market feeds · no API key required", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Surface(shape = RoundedCornerShape(50), color = TradePanel) {
-                    Icon(Icons.Default.ShowChart, null, tint = TradeGreen, modifier = Modifier.padding(12.dp).size(22.dp))
+                FilledIconButton(onClick = { refreshed++ }, enabled = !loading, shape = RoundedCornerShape(18.dp)) {
+                    if (loading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                    else Icon(Icons.Default.ShowChart, contentDescription = "Refresh markets")
                 }
             }
         }
         item {
             Card(colors = CardDefaults.cardColors(containerColor = TradePanel), shape = RoundedCornerShape(24.dp)) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("MARKET DATA", style = MaterialTheme.typography.labelMedium, color = TradeGreen)
-                    Text("Connect a price provider", style = MaterialTheme.typography.titleLarge, color = Color.White)
-                    Text("Live quotes, market movers, bond yields and interactive charts will appear here when a market-data API is configured. No sample prices are presented as real.", color = Color(0xFFB7C0BA))
-                    OutlinedButton(onClick = onOpenTrades, shape = RoundedCornerShape(24.dp)) { Text("View trade journal") }
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("LIVE DATA CONNECTIONS", style = MaterialTheme.typography.labelMedium, color = TradeGreen)
+                    Text("Markets powered by public sources", style = MaterialTheme.typography.titleLarge, color = Color.White)
+                    Text("Crypto: Binance 24-hour ticker · FX: ECB reference rates via Frankfurter · Equities and metals: Stooq daily data · Treasury curve: FRED. Availability and update frequency depend on each source.", color = Color(0xFFB7C0BA), style = MaterialTheme.typography.bodySmall)
+                    OutlinedButton(onClick = onOpenTrades, shape = RoundedCornerShape(24.dp)) { Text("Open trade journal") }
                 }
             }
         }
@@ -128,7 +143,9 @@ fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
             OutlinedTextField(search, { search = it }, modifier = Modifier.fillMaxWidth(),
                 label = { Text("Search markets") }, singleLine = true, shape = RoundedCornerShape(28.dp))
         }
-        items(instruments.filter { it.contains(search, true) }) { symbol ->
+        if (loading && quotes.isEmpty()) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+        error?.let { message -> item { Text(message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) } }
+        items(quotes.filter { it.symbol.contains(search, true) || it.name.contains(search, true) }, key = { it.symbol }) { quote ->
             Card(
                 modifier = Modifier.fillMaxWidth().clickable { onOpenTrades() },
                 colors = CardDefaults.cardColors(containerColor = TradePanel),
@@ -139,29 +156,43 @@ fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
                         Icon(Icons.Default.TrendingUp, null, tint = TradeGreen, modifier = Modifier.padding(10.dp))
                     }
                     Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(symbol, color = Color.White, fontWeight = FontWeight.SemiBold)
-                        Text(category, color = Color(0xFF9BA69E), style = MaterialTheme.typography.bodySmall)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text(quote.name, color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text("${quote.source} · ${quote.delayLabel}", color = Color(0xFF9BA69E), style = MaterialTheme.typography.labelSmall)
+                        quote.error?.let { Text("Unavailable: $it", color = TradeRed, style = MaterialTheme.typography.labelSmall) }
                     }
-                    Text("—", color = Color(0xFF9BA69E))
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(quote.price?.let { String.format(Locale.US, "%.5f", it).trimEnd('0').trimEnd('.') } ?: "—",
+                            color = Color.White, fontWeight = FontWeight.Bold)
+                        quote.changePct?.let { Text(String.format(Locale.US, "%+.2f%%", it),
+                            color = if (it >= 0) TradeGreen else TradeRed, style = MaterialTheme.typography.labelSmall) }
+                        Text(quote.timestamp.take(10).ifBlank { "No timestamp" }, color = Color(0xFF9BA69E), style = MaterialTheme.typography.labelSmall)
+                    }
                 }
             }
         }
-        item {
-            Card(colors = CardDefaults.cardColors(containerColor = TradePanel), shape = RoundedCornerShape(22.dp)) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Bond yields", style = MaterialTheme.typography.titleLarge, color = Color.White)
-                    Text("Treasuries and corporate yields", color = Color(0xFFB7C0BA))
-                    listOf("U.S. Treasury", "Corporate AAA", "Corporate AA", "Corporate A", "Corporate BBB").forEach {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text(it, color = Color.White)
-                            Text("Connect data feed", color = Color(0xFF9BA69E), style = MaterialTheme.typography.bodySmall)
+        if (category == "Forex" || category == "Equities") {
+            item {
+                Card(colors = CardDefaults.cardColors(containerColor = TradePanel), shape = RoundedCornerShape(22.dp)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("U.S. Treasury yields", style = MaterialTheme.typography.titleLarge, color = Color.White)
+                        Text("Daily constant-maturity series · FRED", color = Color(0xFF9BA69E), style = MaterialTheme.typography.bodySmall)
+                        yields.forEach { y ->
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(y.label, color = Color.White)
+                                Text(y.value?.let { String.format(Locale.US, "%.2f%%", it) } ?: "—",
+                                    color = if (y.value == null) Color(0xFF9BA69E) else TradeGreen)
+                                Text(y.date ?: "", color = Color(0xFF9BA69E), style = MaterialTheme.typography.labelSmall)
+                            }
                         }
                     }
                 }
             }
         }
-        item { Text("Tap a market to continue to your trade journal. Market prices are intentionally blank until a verified feed is configured.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant); Spacer(Modifier.height(12.dp)) }
+        item {
+            Text("Prices are indicative public-feed data, not broker quotes. FX rates are ECB reference rates (not intraday); Stooq quotes and Treasury yields are daily. Provider availability, licensing, symbol coverage and rate limits may change.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(12.dp))
+        }
     }
 }
 
