@@ -192,7 +192,7 @@ Use HTTPS for remote services. Do not paste real API keys into source files, iss
 
 Open the **Engine** tab to check the bundled Python runtime, paste XTrend Speed signals, validate a setup and calculate a risk-based position size, import OHLCV CSV data, inspect the current market regime, run a historical backtest and save/load the local signal journal. CSV files must contain `timestamp,open,high,low,close`; `volume` is optional. Use ISO-8601 timestamps, preferably UTC. The regime detector requires at least 60 candles.
 
-The original package is retained as `forex_signal_system.zip`. The Gradle `preBuild` task extracts its Python modules and applies documented Android compatibility and risk-safety fixes into an ignored generated source directory. Chaquopy bundles Python 3.13, NumPy 1.26.2 and pandas 2.1.3. See [Python engine integration](docs/python-engine.md).
+The original package is retained as `forex_signal_system.zip`. The Gradle `preBuild` task extracts its Python modules and applies documented Android compatibility and risk-safety fixes into an ignored generated source directory. Chaquopy bundles Python 3.13, NumPy 2.3.2 and pandas 2.3.2. See [Python engine integration](docs/python-engine.md).
 
 The app currently uses user-imported CSV data only. The Python package's Yahoo adapter is not enabled in the Android build because `yfinance` and its dependency chain are not bundled. No live price feed is implied by the analysis UI.
 
