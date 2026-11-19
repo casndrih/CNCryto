@@ -33,6 +33,10 @@ CNCryto is an Android application foundation for market research, model-assisted
 - Dark interface with lime accent palette.
 - Android min SDK 24; compile/target SDK 35.
 - Multiple configurable model profiles in the UI.
+- Provider model discovery through authenticated OpenAI-compatible `GET /models`; returned model IDs are selectable rather than manually typed.
+- Saved provider profiles automatically refresh their model catalog when the Providers screen is opened, with a manual refresh action available.
+- Fully rounded text fields, buttons and model selectors; System, Light and Dark appearance modes with a true-black dark-mode canvas and dark bottom navigation.
+- Release builds use R8 code shrinking, resource shrinking and core-library desugaring.
 - Concurrent requests to enabled OpenAI-compatible chat-completions endpoints.
 - Per-provider failure isolation: one failed provider does not discard successful forecasts.
 - Reliability-weighted directional consensus engine with neutral prior.
@@ -157,7 +161,7 @@ The root APK is a **debug** build, not a signed Play Store release.
 6. Save the profiles to encrypted local storage.
 7. Return to Analysis and run an ensemble.
 
-The current adapter expects an OpenAI-compatible `POST /chat/completions` endpoint and a response containing `choices[0].message.content`. This is suitable for OpenAI and many compatible gateways (including common Groq, Together AI and Ollama-compatible endpoints). Azure deployments and native Anthropic/Gemini APIs may require dedicated adapters and are not claimed to work through the current adapter.
+Model discovery and prediction both expect an OpenAI-compatible API: `GET /models` for listing models and `POST /chat/completions` for forecasts and a response containing `choices[0].message.content`. This is suitable for OpenAI and many compatible gateways (including common Groq, Together AI and Ollama-compatible endpoints). Azure deployments and native Anthropic/Gemini APIs may require dedicated adapters and are not claimed to work through the current adapter.
 
 Example endpoint (OpenAI):
 
