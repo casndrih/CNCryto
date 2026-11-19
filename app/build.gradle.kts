@@ -40,8 +40,8 @@ chaquopy {
     defaultConfig {
         version = "3.13"
         pip {
-            install("numpy==2.3.2")
-            install("pandas==2.3.2")
+            install("numpy==1.26.2")
+            install("pandas==2.1.3")
         }
     }
 }
@@ -57,6 +57,11 @@ val prepareForexPython by tasks.registering(org.gradle.api.tasks.Exec::class) {
 }
 
 tasks.named("preBuild").configure { dependsOn(prepareForexPython) }
+tasks.configureEach {
+    if (name.endsWith("PythonSources")) {
+        dependsOn(prepareForexPython)
+    }
+}
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
