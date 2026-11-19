@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ListAlt
+import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -97,7 +99,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 LaunchedEffect(tab) {
-                    if (tab == 1) profiles.filter { it.key.isNotBlank() && modelOptions[it.id] == null }.forEach { loadModels(it) }
+                    if (tab == 4) profiles.filter { it.key.isNotBlank() && modelOptions[it.id] == null }.forEach { loadModels(it) }
                 }
 
                 Scaffold(
@@ -107,28 +109,29 @@ class MainActivity : ComponentActivity() {
                             containerColor = if (darkMode) Color(0xFF101010) else Color(0xFFF0F1EC),
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ) {
-                            NavigationBarItem(selected = tab == 0, onClick = { tab = 0 },
-                                icon = { Icon(Icons.Default.AutoGraph, null) }, label = { Text("Analysis") },
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = Lime, selectedTextColor = if (darkMode) Lime else Dark.primary,
-                                    indicatorColor = if (darkMode) Color(0xFF26300F) else Color(0xFFE5F2C9)
-                                ))
-                            NavigationBarItem(selected = tab == 1, onClick = { tab = 1 },
-                                icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Providers") },
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = Lime, selectedTextColor = if (darkMode) Lime else Dark.primary,
-                                    indicatorColor = if (darkMode) Color(0xFF26300F) else Color(0xFFE5F2C9)
-                                ))
-                            NavigationBarItem(selected = tab == 2, onClick = { tab = 2 },
-                                icon = { Icon(Icons.Default.ListAlt, null) }, label = { Text("Engine") },
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = Lime, selectedTextColor = if (darkMode) Lime else Dark.primary,
-                                    indicatorColor = if (darkMode) Color(0xFF26300F) else Color(0xFFE5F2C9)
-                                ))
+                            val navColors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Lime,
+                            selectedTextColor = if (darkMode) Lime else Dark.primary,
+                            indicatorColor = if (darkMode) Color(0xFF26300F) else Color(0xFFE5F2C9)
+                        )
+                        NavigationBarItem(selected = tab == 0, onClick = { tab = 0 },
+                            icon = { Icon(Icons.Default.ShowChart, null) }, label = { Text("Markets") }, colors = navColors)
+                        NavigationBarItem(selected = tab == 1, onClick = { tab = 1 },
+                            icon = { Icon(Icons.Default.Wallet, null) }, label = { Text("Trades") }, colors = navColors)
+                        NavigationBarItem(selected = tab == 2, onClick = { tab = 2 },
+                            icon = { Icon(Icons.Default.AutoGraph, null) }, label = { Text("Analysis") }, colors = navColors)
+                        NavigationBarItem(selected = tab == 3, onClick = { tab = 3 },
+                            icon = { Icon(Icons.Default.ListAlt, null) }, label = { Text("Engine") }, colors = navColors)
+                        NavigationBarItem(selected = tab == 4, onClick = { tab = 4 },
+                            icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Settings") }, colors = navColors)
                         }
                     }
                 ) { pad ->
                     if (tab == 0) {
+                        MarketsScreen(onOpenTrades = { tab = 1 }, modifier = Modifier.fillMaxSize().padding(pad))
+                    } else if (tab == 1) {
+                        TradesScreen(Modifier.fillMaxSize().padding(pad))
+                    } else if (tab == 2) {
                         LazyColumn(Modifier.fillMaxSize().padding(pad).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                             item { Text("CNCryto", style = MaterialTheme.typography.headlineLarge); Text("Multi-model market intelligence", color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             item {
@@ -171,7 +174,7 @@ class MainActivity : ComponentActivity() {
                             item { Text("No live prices or verified trade signals are shown until a market-data source is connected.", style = MaterialTheme.typography.bodySmall) }
                             item { Text("Trading involves substantial risk. AI output is not financial advice and no orders are executed.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                         }
-                    } else if (tab == 1) {
+                    } else if (tab == 4) {
                         LazyColumn(Modifier.fillMaxSize().padding(pad).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             item {
                                 Text("AI providers", style = MaterialTheme.typography.headlineLarge)
