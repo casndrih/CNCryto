@@ -17,6 +17,12 @@ class ProviderVault(context: Context) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
+    fun saveSecret(name: String, value: String) {
+        prefs.edit().putString("secret:$name", value).apply()
+    }
+
+    fun loadSecret(name: String): String = prefs.getString("secret:$name", "").orEmpty()
+
     fun save(profiles: List<ProviderConfig>) {
         val array = JSONArray()
         profiles.forEach { profile ->
