@@ -123,7 +123,7 @@ See [AI ensemble design](docs/ai-ensemble.md).
 - Android Studio with Android SDK Platform 35 installed.
 - JDK 17.
 - Python 3.13 on PATH (Chaquopy build and source preparation).
-- Gradle 8.9 (the CI workflow provisions it automatically).
+- Gradle 8.11.1 (the CI workflow provisions it automatically).
 - 64-bit ARM Android device running Android 7.0 / API 24 or later (the packaged Python ABI is `arm64-v8a`).
 - An API key for at least one compatible model endpoint to generate model forecasts.
 
@@ -139,7 +139,7 @@ See [AI ensemble design](docs/ai-ensemble.md).
 
 ### Command line
 
-With Gradle 8.9 and JDK 17 installed:
+With Gradle 8.11.1 and JDK 17 installed:
 
 ```bash
 gradle --no-daemon assembleDebug assembleRelease testDebugUnitTest
