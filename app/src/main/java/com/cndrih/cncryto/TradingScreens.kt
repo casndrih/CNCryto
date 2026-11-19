@@ -306,6 +306,9 @@ private fun TradeDetailScreen(
         trade.symbol.uppercase().contains("BTC") || trade.symbol.uppercase().contains("ETH") ||
             trade.symbol.uppercase().contains("SOL") || trade.symbol.uppercase().contains("XRP") ||
             trade.symbol.uppercase().endsWith("USDT") -> "Crypto"
+        trade.symbol.uppercase().contains("XAU") || trade.symbol.uppercase().contains("XAG") ||
+            trade.symbol.uppercase().contains("WTI") || trade.symbol.uppercase().contains("BRENT") ||
+            trade.symbol.equals("GOLD", true) || trade.symbol.equals("SILVER", true) -> "Metals"
         else -> "Equities"
     }
     var candles by remember(trade.symbol) { mutableStateOf<List<MarketCandle>>(emptyList()) }
