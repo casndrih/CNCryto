@@ -6,7 +6,7 @@ Thanks for helping improve CNCryto.
 
 - JDK 17
 - Android Studio with Android SDK Platform 35
-- Gradle 8.9
+- Gradle 8.11.1
 - Python 3.13 on PATH for the Chaquopy source-preparation task
 - Android API 24+ emulator/device
 
