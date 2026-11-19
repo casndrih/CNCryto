@@ -113,7 +113,11 @@ object MarketDataRepository {
                     "NASDAQ 100", "NDX" -> "qqq.us"
                     "DOW 30", "DJI" -> "dia.us"
                     "RUSSELL 2000" -> "iwm.us"
-                    else -> symbol.lowercase().replace("/", "").let { if (it.endsWith(".us")) it else "$it.us" }
+                    "XAU/USD", "XAUUSD", "GOLD" -> "xauusd"
+                    "XAG/USD", "XAGUSD", "SILVER" -> "xagusd"
+                    "WTI", "WTI/USD" -> "cl.f"
+                    "BRENT", "BRENT/USD" -> "cb.f"
+                    else -> symbol.lowercase().replace("/", "").let { if (it.endsWith(".us") || category == "Metals") it else "${it}.us" }
                 }
                 val csv = get("https://stooq.com/q/d/l/?s=$ticker&i=d")
                 csv.lines().drop(1).filter { it.isNotBlank() }.takeLast(80).mapNotNull { line ->
