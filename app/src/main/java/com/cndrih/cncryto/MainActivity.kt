@@ -195,10 +195,10 @@ class MainActivity : ComponentActivity() {
                                         OutlinedTextField(p.name, { v -> update(p.id) { it.copy(name = v) } },
                                             label = { Text("Provider label") }, modifier = Modifier.fillMaxWidth(),
                                             singleLine = true, shape = RoundedCornerShape(28.dp))
-                                        OutlinedTextField(p.endpoint, { v -> update(p.id) { it.copy(endpoint = v) } },
+                                        OutlinedTextField(p.endpoint, { v -> update(p.id) { it.copy(endpoint = v) }; modelOptions.remove(p.id); modelErrors.remove(p.id) },
                                             label = { Text("OpenAI-compatible base URL") }, modifier = Modifier.fillMaxWidth(),
                                             singleLine = true, shape = RoundedCornerShape(28.dp))
-                                        OutlinedTextField(p.key, { v -> update(p.id) { it.copy(key = v) } },
+                                        OutlinedTextField(p.key, { v -> update(p.id) { it.copy(key = v) }; modelOptions.remove(p.id); modelErrors.remove(p.id) },
                                             label = { Text("API key") }, modifier = Modifier.fillMaxWidth(),
                                             singleLine = true, visualTransformation = PasswordVisualTransformation(),
                                             shape = RoundedCornerShape(28.dp))
