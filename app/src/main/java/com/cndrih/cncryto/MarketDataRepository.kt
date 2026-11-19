@@ -61,7 +61,7 @@ object MarketDataRepository {
     }
 
     private fun binanceQuote(symbol: String): MarketQuote {
-        val o = JSONObject(get("https://api.binance.com/api/v3/ticker/24hr?symbol=$symbol"))
+        val o = JSONObject(get("https://data-api.binance.vision/api/v3/ticker/24hr?symbol=$symbol"))
         return MarketQuote(symbol, symbol, "Crypto", o.optString("lastPrice").toDoubleOrNull(),
             o.optString("priceChangePercent").toDoubleOrNull(), o.optString("closeTime"), "Binance", "Live · 24h")
     }
@@ -90,7 +90,7 @@ object MarketDataRepository {
         when (category) {
             "Crypto" -> {
                 val pair = symbol.replace("/", "").uppercase().let { if (it.endsWith("USD") && !it.endsWith("USDT")) it + "T" else it }
-                val a = JSONArray(get("https://api.binance.com/api/v3/klines?symbol=$pair&interval=1h&limit=80"))
+                val a = JSONArray(get("https://data-api.binance.vision/api/v3/klines?symbol=$pair&interval=1h&limit=80"))
                 (0 until a.length()).map { i ->
                     val c = a.getJSONArray(i)
                     MarketCandle(c.getLong(0), c.getString(1).toDouble(), c.getString(2).toDouble(), c.getString(3).toDouble(), c.getString(4).toDouble())
