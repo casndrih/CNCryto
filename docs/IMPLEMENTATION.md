@@ -12,7 +12,7 @@ This file distinguishes delivered code from planned capabilities. A feature is n
 | Provider discovery | Authenticated OpenAI-compatible GET /models and selectable model dropdown |
 | AI inference | Concurrent OpenAI-compatible POST /chat/completions calls with failure isolation |
 | Consensus | Reliability-weighted direction/score with neutral reliability prior |
-| Python runtime | Chaquopy 17.2, Python 3.13, NumPy 1.26.2 and pandas 2.1.3 |
+| Python runtime | Chaquopy 17.2, Python 3.13, NumPy 2.3.2 and pandas 2.3.2 |
 | Python source | Original forex_signal_system.zip is versioned; Gradle extracts it and applies Android compatibility fixes |
 | Signal parsing | XTrend Speed copied text and structured JSON; structured JSON price levels are retained |
 | Risk validation | Directional stop/target validation, minimum reward-to-risk, account checks and position sizing |
@@ -33,8 +33,8 @@ Android dependencies are pinned in app/build.gradle.kts:
 
 - Chaquopy Gradle plugin 17.2.0
 - Python 3.13
-- NumPy 1.26.2
-- pandas 2.1.3
+- NumPy 2.3.2
+- pandas 2.3.2
 - arm64-v8a Android ABI
 
 The ABI choice keeps the native scientific stack smaller and targets current 64-bit ARM phones. x86 emulator and 32-bit ARM APKs are not produced by this configuration.
