@@ -127,7 +127,7 @@ fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("LIVE DATA CONNECTIONS", style = MaterialTheme.typography.labelMedium, color = TradeGreen)
                     Text("Markets powered by public sources", style = MaterialTheme.typography.titleLarge, color = Color.White)
-                    Text("Crypto: Binance 24-hour ticker · FX: ECB reference rates via Frankfurter · Equities and commodities: Alpha Vantage (free key) · Treasury curve: FRED. Availability and update frequency depend on each source.", color = Color(0xFFB7C0BA), style = MaterialTheme.typography.bodySmall)
+                    Text("Crypto: Binance 24-hour ticker · FX: central-bank reference rates via Frankfurter · Equities and commodities: Alpha Vantage (free key) · Treasury curve: FRED. Availability and update frequency depend on each source.", color = Color(0xFFB7C0BA), style = MaterialTheme.typography.bodySmall)
                     OutlinedButton(onClick = onOpenTrades, shape = RoundedCornerShape(24.dp)) { Text("Open trade journal") }
                 }
             }
@@ -326,8 +326,8 @@ private fun TradeDetailScreen(
             val loaded = MarketDataRepository.candles(trade.symbol, category, alphaKey)
             candles = loaded
             chartMessage = if (loaded.isEmpty()) "No historical candles available for this instrument." else
-                (if (category == "Forex") "ECB daily reference-rate history" else "Historical OHLC") +
-                    " · ${loaded.size} bars · ${if (category == "Crypto") "Binance 1h" else if (category == "Forex") "Frankfurter / ECB daily" else "Alpha Vantage daily/spot"}"
+                (if (category == "Forex") "Frankfurter daily reference-rate history" else "Historical OHLC") +
+                    " · ${loaded.size} bars · ${if (category == "Crypto") "Binance 1h" else if (category == "Forex") "Frankfurter daily" else "Alpha Vantage daily/spot"}"
         } catch (t: Throwable) {
             chartMessage = "Chart data unavailable: ${t.message ?: "provider error"}"
         }
