@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.cndrih.cncryto.ai.*
 import kotlinx.coroutines.launch
 
@@ -25,8 +26,13 @@ class MainActivity:ComponentActivity(){
   setContent { MaterialTheme(colorScheme=Dark) {
    var tab by remember { mutableIntStateOf(0) }
    var symbol by remember { mutableStateOf("BTCUSDT") }
-   var profiles by remember { mutableStateOf(listOf(ProviderDraft(1,"OpenAI","https://api.openai.com/v1","gpt-4o-mini",""))) }
-   var nextId by remember { mutableIntStateOf(2) }
+   val initialProfiles = remember {
+    vault.load().mapIndexed { index, profile ->
+     ProviderDraft(index + 1, profile.id, profile.baseUrl, profile.model, profile.apiKey, profile.enabled)
+    }.ifEmpty { listOf(ProviderDraft(1,"OpenAI","https://api.openai.com/v1","gpt-4o-mini","")) }
+   }
+   var profiles by remember { mutableStateOf(initialProfiles) }
+   var nextId by remember { mutableIntStateOf((initialProfiles.maxOfOrNull { it.id } ?: 0) + 1) }
    var output by remember { mutableStateOf<EnsembleResult?>(null) }
    var error by remember { mutableStateOf<String?>(null) }
    var busy by remember { mutableStateOf(false) }
@@ -71,7 +77,7 @@ class MainActivity:ComponentActivity(){
        OutlinedTextField(p.name,{v->update(p.id){it.copy(name=v)}},label={Text("Provider label")},modifier=Modifier.fillMaxWidth(),singleLine=true)
        OutlinedTextField(p.endpoint,{v->update(p.id){it.copy(endpoint=v)}},label={Text("OpenAI-compatible base URL")},modifier=Modifier.fillMaxWidth(),singleLine=true)
        OutlinedTextField(p.model,{v->update(p.id){it.copy(model=v)}},label={Text("Model ID")},modifier=Modifier.fillMaxWidth(),singleLine=true)
-       OutlinedTextField(p.key,{v->update(p.id){it.copy(key=v)}},label={Text("API key")},modifier=Modifier.fillMaxWidth(),singleLine=true)
+       OutlinedTextField(p.key,{v->update(p.id){it.copy(key=v)}},label={Text("API key")},modifier=Modifier.fillMaxWidth(),singleLine=true,visualTransformation=PasswordVisualTransformation())
       }}
      }
      item{OutlinedButton(onClick={profiles=profiles+ProviderDraft(nextId,"Provider $nextId","https://api.openai.com/v1","model-id","");nextId++},modifier=Modifier.fillMaxWidth()){Text("Add another model/provider")}}
