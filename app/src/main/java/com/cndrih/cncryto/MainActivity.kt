@@ -170,7 +170,9 @@ class MainActivity : ComponentActivity() {
                                             } else {
                                                 "Public market data could not be retrieved for $symbol. No OHLCV features supplied; do not invent market facts or prices."
                                             }
-                                            val req = PredictionRequest(symbol, "1h", "4h", configs,
+                                            val analysisTimeframe = if (marketCategory == "Crypto") "1h" else "1d"
+                                            val analysisHorizon = if (marketCategory == "Crypto") "4h" else "1d"
+                                            val req = PredictionRequest(symbol, analysisTimeframe, analysisHorizon, configs,
                                                 MarketContext(dataNote, features))
                                             output = EnsembleEngine(listOf(OpenAiCompatibleProvider()), NeutralAccuracyLedger()).predict(req)
                                         } catch (t: Throwable) { error = t.message ?: "Prediction failed" }
