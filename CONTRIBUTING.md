@@ -7,12 +7,15 @@ Thanks for helping improve CNCryto.
 - JDK 17
 - Android Studio with Android SDK Platform 35
 - Gradle 8.9
+- Python 3.13 on PATH for the Chaquopy source-preparation task
 - Android API 24+ emulator/device
 
 Open the repository in Android Studio or run:
 
 ```bash
-gradle --no-daemon assembleDebug testDebugUnitTest
+python scripts/prepare_python_engine.py --source forex_signal_system.zip --dest app/src/main/python
+python -m unittest discover -s tests/python -v
+gradle --no-daemon assembleDebug assembleRelease testDebugUnitTest
 ```
 
 ## Pull request expectations
@@ -24,6 +27,14 @@ gradle --no-daemon assembleDebug testDebugUnitTest
 5. Update README/docs when build steps, configuration or feature status changes.
 6. Include build/test results and note any manual device testing.
 7. Do not describe planned or mocked functionality as complete.
+
+## Python engine conventions
+
+- Treat forex_signal_system.zip as the original source archive; do not edit the ignored generated extraction directory.
+- Make compatibility changes in scripts/prepare_python_engine.py and add regression tests under tests/python.
+- Keep the Android Python dependency set minimal and verify native wheels for the supported arm64-v8a ABI.
+- Keep Python calls behind PythonForexEngine and execute them off the Compose main thread.
+- Use UTC timestamps and Decimal for prices, money and risk calculations.
 
 ## Kotlin conventions
 
