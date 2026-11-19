@@ -84,6 +84,8 @@ private object TradeStore {
 
 @Composable
 fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val alphaKey = remember { ProviderVault(context).loadSecret("alpha_vantage_key") }
     var category by remember { mutableStateOf("Forex") }
     var search by remember { mutableStateOf("") }
     var quotes by remember(category) { mutableStateOf<List<MarketQuote>>(emptyList()) }
@@ -112,7 +114,7 @@ fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
                     Text("Markets", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                    Text("Public market feeds · no API key required", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Public feeds · optional free key for equities and commodities", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 FilledIconButton(onClick = { refreshed++ }, enabled = !loading, shape = RoundedCornerShape(18.dp)) {
                     if (loading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -306,7 +308,7 @@ private fun TradeDetailScreen(
 ) {
     val context = LocalContext.current
     val category = when {
-        trade.symbol.contains("/") -> "Forex"
+        trade.symbol.contains("/") || (trade.symbol.length == 6 && setOf("EUR", "GBP", "USD", "AUD", "NZD", "CAD", "CHF", "JPY").contains(trade.symbol.take(3))) -> "Forex"
         trade.symbol.uppercase().contains("BTC") || trade.symbol.uppercase().contains("ETH") ||
             trade.symbol.uppercase().contains("SOL") || trade.symbol.uppercase().contains("XRP") ||
             trade.symbol.uppercase().endsWith("USDT") -> "Crypto"
@@ -325,7 +327,7 @@ private fun TradeDetailScreen(
             candles = loaded
             chartMessage = if (loaded.isEmpty()) "No historical candles available for this instrument." else
                 (if (category == "Forex") "ECB daily reference-rate history" else "Historical OHLC") +
-                    " · ${loaded.size} bars · ${if (category == "Crypto") "Binance 1h" else if (category == "Forex") "Frankfurter / ECB daily" else "Stooq daily"}"
+                    " · ${loaded.size} bars · ${if (category == "Crypto") "Binance 1h" else if (category == "Forex") "Frankfurter / ECB daily" else "Alpha Vantage daily/spot"}"
         } catch (t: Throwable) {
             chartMessage = "Chart data unavailable: ${t.message ?: "provider error"}"
         }
