@@ -304,6 +304,7 @@ private fun TradeDetailScreen(
     onModify: (OpenTrade) -> Unit,
     onClose: (OpenTrade) -> Unit
 ) {
+    val context = LocalContext.current
     val category = when {
         trade.symbol.contains("/") -> "Forex"
         trade.symbol.uppercase().contains("BTC") || trade.symbol.uppercase().contains("ETH") ||
@@ -314,7 +315,7 @@ private fun TradeDetailScreen(
             trade.symbol.equals("GOLD", true) || trade.symbol.equals("SILVER", true) -> "Metals"
         else -> "Equities"
     }
-    val alphaKey = remember { ProviderVault(LocalContext.current).loadSecret("alpha_vantage_key") }
+    val alphaKey = remember { ProviderVault(context).loadSecret("alpha_vantage_key") }
     var candles by remember(trade.symbol) { mutableStateOf<List<MarketCandle>>(emptyList()) }
     var displayTrade by remember(trade.id) { mutableStateOf(trade) }
     var chartMessage by remember(trade.symbol) { mutableStateOf("Loading public OHLC data…") }
