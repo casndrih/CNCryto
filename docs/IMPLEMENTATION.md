@@ -12,7 +12,7 @@ This file distinguishes delivered code from planned capabilities. A feature is n
 | Provider discovery | Authenticated OpenAI-compatible GET /models and selectable model dropdown |
 | AI inference | Concurrent OpenAI-compatible POST /chat/completions calls with failure isolation |
 | Consensus | Reliability-weighted direction/score with neutral reliability prior |
-| Python runtime | Chaquopy 17.2, Python 3.13, NumPy 1.26.2 and pandas 2.1.3 |
+| Python runtime | Chaquopy 17.2, AGP 8.9.2, Gradle 8.11.1, Python 3.13, NumPy 1.26.2 and pandas 2.1.3 |
 | Python source | Original forex_signal_system.zip is versioned; Gradle extracts it and applies Android compatibility fixes |
 | Signal parsing | XTrend Speed copied text and structured JSON; structured JSON price levels are retained |
 | Risk validation | Directional stop/target validation, minimum reward-to-risk, account checks and position sizing |
