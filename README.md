@@ -51,7 +51,7 @@ CNCryto is an Android application foundation for market research, model-assisted
 
 ### Planned capabilities
 
-The original development specification also describes markets and watchlists, XTrend Speed signal parsing, market-regime detection, risk-based position sizing, a strategy builder, historical backtesting, paper trading, portfolio analytics, charts, news and economic-calendar context, prediction history and model calibration. These must be implemented and tested before they should be considered available.
+Remaining planned capabilities include live markets and watchlists, a strategy builder, paper trading, portfolio analytics, charts, news and economic-calendar context, matured prediction calibration and broker-independent account analytics. These must be implemented and tested before they should be considered available.
 
 ## Architecture
 
@@ -67,7 +67,7 @@ ViewModel / UI state
 Use cases
    │
    ├── Market-data repository ── Exchange / broker / licensed data APIs
-   ├── Signal repository ─────── Python signal engine (when source is supplied)
+   ├── Signal repository ─────── Chaquopy Python signal/risk/backtest engine
    ├── Prediction use case
    │       ├── Provider adapter A ──┐
    │       ├── Provider adapter B ──┼─ Concurrent forecasts
@@ -95,7 +95,11 @@ CNCryto/
 │       └── test/            # JVM unit tests
 ├── docs/
 │   ├── IMPLEMENTATION.md
+│   ├── python-engine.md
 │   └── ai-ensemble.md
+├── forex_signal_system.zip
+├── scripts/prepare_python_engine.py
+├── tests/python/test_bridge.py
 ├── CNCryto-debug.apk        # Latest CI-published debug build
 ├── build.gradle.kts
 ├── settings.gradle.kts
@@ -149,7 +153,7 @@ The debug application ID has the `.debug` suffix, so it can be installed alongsi
 
 ### CI build
 
-Pushes and pull requests to `main` run debug and R8-minified release builds plus JVM unit tests. CI uploads both APK artifacts; on a push to `main`, it also commits the generated `CNCryto-debug.apk` to the repository root. The release artifact is unsigned and intended for shrinker/build verification, not direct distribution. Pull-request builds do not publish an APK into the branch.
+Pushes and pull requests to `main` run eight Python engine regression tests, JVM unit tests, debug builds and R8-minified release builds. CI uploads both APK artifacts; on a push to `main`, it also commits the generated `CNCryto-debug.apk` to the repository root. The release artifact is unsigned and intended for shrinker/build verification, not direct distribution. Pull-request builds do not publish an APK into the branch.
 
 - [Latest workflow runs](https://github.com/casndrih/CNCryto/actions)
 - [Download latest debug APK](https://github.com/casndrih/CNCryto/blob/main/CNCryto-debug.apk)
@@ -161,9 +165,9 @@ The root APK is a **debug** build, not a signed Play Store release.
 1. Install and open CNCryto.
 2. Open the **Providers** tab.
 3. Add one profile per model endpoint.
-4. Enter the endpoint base URL, model ID and API key.
-5. Enable the profiles you want included.
-6. Save the profiles to encrypted local storage.
+4. Enter the endpoint base URL and API key.
+5. Tap **Load models**, then select a model from the provider's returned list.
+6. Enable the profiles you want included and save them to encrypted local storage.
 7. Return to Analysis and run an ensemble.
 
 Model discovery and prediction both expect an OpenAI-compatible API: `GET /models` for listing models and `POST /chat/completions` for forecasts and a response containing `choices[0].message.content`. This is suitable for OpenAI and many compatible gateways (including common Groq, Together AI and Ollama-compatible endpoints). Azure deployments and native Anthropic/Gemini APIs may require dedicated adapters and are not claimed to work through the current adapter.
@@ -192,6 +196,13 @@ The app currently uses user-imported CSV data only. The Python package's Yahoo a
 
 ## Tests
 
+Run the Python engine tests (after preparing the extracted source):
+
+```bash
+python scripts/prepare_python_engine.py --source forex_signal_system.zip --dest app/src/main/python
+python -m unittest discover -s tests/python -v
+```
+
 Run JVM unit tests:
 
 ```bash
@@ -201,7 +212,7 @@ gradle --no-daemon testDebugUnitTest
 Build and test together:
 
 ```bash
-gradle --no-daemon assembleDebug testDebugUnitTest
+gradle --no-daemon assembleDebug assembleRelease testDebugUnitTest
 ```
 
 The CI workflow runs eight Python engine regression tests plus JVM tests and debug/release Android builds on every push and pull request. These tests cover the bridge, parser, risk gates, CSV regime analysis, backtesting and local journal on the host Python runtime; they do not establish live-market prediction accuracy, Android-device runtime compatibility, broker correctness or trading safety.
@@ -223,7 +234,7 @@ The specification in the original project brief is broader than the current chec
 - No automatic live market-data source is wired into the AI analysis prompt. Without verified candles, forecasts must not be treated as market signals.
 - Provider reliability is a neutral placeholder, not historical model accuracy calibration.
 - Only OpenAI-compatible chat-completions protocol is implemented.
-- Room persistence, Hilt dependency injection, full MVVM/use-case layers, signal journal and prediction history are not yet implemented.
+- Room persistence, Hilt dependency injection, full MVVM/use-case layers and AI prediction history are not yet implemented. The Python signal journal currently uses SQLite in app-private storage.
 - No strategy editor, charting, economic calendar, news/RAG, portfolio sync or paper-trading engine is currently shipped. The historical backtest engine is available for imported CSV data.
 - No broker integration or automatic order execution is included.
 - No signed release APK or Play Store distribution configuration is supplied.
