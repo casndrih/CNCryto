@@ -14,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.cndrih.cncryto.ai.*
@@ -34,12 +33,12 @@ private val Light = lightColorScheme(
 private data class ProviderDraft(val id: Int, val name: String, val endpoint: String, val model: String, val key: String, val enabled: Boolean = true)
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val vault = ProviderVault(this)
         val preferences = getSharedPreferences("cncryto_ui", MODE_PRIVATE)
         setContent {
-            val context = LocalContext.current
             var themeChoice by remember { mutableStateOf(preferences.getString("theme", "system") ?: "system") }
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
             val darkMode = when (themeChoice) { "dark" -> true; "light" -> false; else -> systemDark }
