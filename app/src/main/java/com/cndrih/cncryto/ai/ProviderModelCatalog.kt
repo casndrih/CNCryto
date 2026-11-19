@@ -39,11 +39,9 @@ class ProviderModelCatalog {
             buildList {
                 for (index in 0 until data.length()) {
                     val id = data.optJSONObject(index)?.optString("id").orEmpty().trim()
-                    if (id.isNotNotBlank()) add(id)
+                    if (id.isNotBlank()) add(id)
                 }
             }.distinct().sorted()
         }
     }
-
-    private fun String.isNotNotBlank() = isNotBlank()
 }
