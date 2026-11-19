@@ -150,7 +150,7 @@ class MainActivity : ComponentActivity() {
                                     scope.launch {
                                         try {
                                             val marketCategory = when {
-                                                symbol.contains("/") -> "Forex"
+                                                symbol.contains("/") || (symbol.length == 6 && setOf("EUR", "GBP", "USD", "AUD", "NZD", "CAD", "CHF", "JPY").contains(symbol.take(3))) -> "Forex"
                                                 symbol.uppercase().contains("BTC") || symbol.uppercase().contains("ETH") ||
                                                     symbol.uppercase().contains("SOL") || symbol.uppercase().contains("XRP") ||
                                                     symbol.uppercase().endsWith("USDT") -> "Crypto"
