@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.chaquo.python")
 }
 
 android {
@@ -14,6 +15,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+        ndk { abiFilters += listOf("arm64-v8a") }
     }
 
     buildTypes {
@@ -33,6 +35,28 @@ android {
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
 }
+
+chaquopy {
+    defaultConfig {
+        version = "3.13"
+        pip {
+            install("numpy==1.26.2")
+            install("pandas==2.1.3")
+        }
+    }
+}
+
+val prepareForexPython by tasks.registering(org.gradle.api.tasks.Exec::class) {
+    val pythonScript = rootProject.file("scripts/prepare_python_engine.py")
+    val sourceArchive = rootProject.file("forex_signal_system.zip")
+    commandLine("python", pythonScript.absolutePath, "--source", sourceArchive.absolutePath,
+        "--dest", file("src/main/python").absolutePath)
+    inputs.file(pythonScript)
+    inputs.file(sourceArchive)
+    outputs.dir(file("src/main/python/forex_signal_system"))
+}
+
+tasks.named("preBuild").configure { dependsOn(prepareForexPython) }
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
