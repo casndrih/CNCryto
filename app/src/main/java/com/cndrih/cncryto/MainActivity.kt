@@ -149,8 +149,29 @@ class MainActivity : ComponentActivity() {
                                     busy = true; error = null; output = null
                                     scope.launch {
                                         try {
+                                            val marketCategory = when {
+                                                symbol.contains("/") -> "Forex"
+                                                symbol.uppercase().contains("BTC") || symbol.uppercase().contains("ETH") ||
+                                                    symbol.uppercase().contains("SOL") || symbol.uppercase().contains("XRP") ||
+                                                    symbol.uppercase().endsWith("USDT") -> "Crypto"
+                                                symbol.uppercase().contains("XAU") || symbol.uppercase().contains("XAG") ||
+                                                    symbol.uppercase().contains("WTI") || symbol.uppercase().contains("BRENT") -> "Metals"
+                                                else -> "Equities"
+                                            }
+                                            val bars = runCatching { MarketDataRepository.candles(symbol, marketCategory) }.getOrDefault(emptyList())
+                                            val features = bars.takeLast(30).flatMap { listOf(it.open, it.high, it.low, it.close) }
+                                            val dataNote = if (bars.isNotEmpty()) {
+                                                "Public market data source: " + when (marketCategory) {
+                                                    "Crypto" -> "Binance hourly OHLCV (public API)"
+                                                    "Forex" -> "ECB daily reference rates via Frankfurter; these are not intraday quotes"
+                                                    "Metals" -> "Stooq daily market data; availability varies"
+                                                    else -> "Stooq daily OHLC; source availability and delay vary"
+                                                } + ". Supplied ${bars.size} bars; latest close ${bars.last().close}. Treat as indicative, not broker execution data."
+                                            } else {
+                                                "Public market data could not be retrieved for $symbol. No OHLCV features supplied; do not invent market facts or prices."
+                                            }
                                             val req = PredictionRequest(symbol, "1h", "4h", configs,
-                                                MarketContext("No live OHLCV feed is connected; models must not invent market facts.", emptyList()))
+                                                MarketContext(dataNote, features))
                                             output = EnsembleEngine(listOf(OpenAiCompatibleProvider()), NeutralAccuracyLedger()).predict(req)
                                         } catch (t: Throwable) { error = t.message ?: "Prediction failed" }
                                         finally { busy = false }
