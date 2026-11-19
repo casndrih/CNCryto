@@ -40,8 +40,8 @@ chaquopy {
     defaultConfig {
         version = "3.13"
         pip {
-            install("numpy==1.26.2")
-            install("pandas==2.1.3")
+            install("numpy==2.3.2")
+            install("pandas==2.3.2")
         }
     }
 }
