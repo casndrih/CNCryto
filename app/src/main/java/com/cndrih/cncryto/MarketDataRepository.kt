@@ -11,6 +11,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.ConcurrentHashMap
 
 data class MarketQuote(
     val symbol: String,
@@ -33,8 +34,8 @@ object MarketDataRepository {
         .readTimeout(15, TimeUnit.SECONDS)
         .callTimeout(20, TimeUnit.SECONDS)
         .build()
-    private val quoteCache = mutableMapOf<String, Pair<Long, List<MarketQuote>>>()
-    private val candleCache = mutableMapOf<String, Pair<Long, List<MarketCandle>>>()
+    private val quoteCache = ConcurrentHashMap<String, Pair<Long, List<MarketQuote>>>()
+    private val candleCache = ConcurrentHashMap<String, Pair<Long, List<MarketCandle>>>()
     private const val CACHE_TTL_MS = 300_000L
 
     private fun get(url: String): String {
