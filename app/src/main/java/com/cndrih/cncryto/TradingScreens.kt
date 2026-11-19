@@ -125,7 +125,7 @@ fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("LIVE DATA CONNECTIONS", style = MaterialTheme.typography.labelMedium, color = TradeGreen)
                     Text("Markets powered by public sources", style = MaterialTheme.typography.titleLarge, color = Color.White)
-                    Text("Crypto: Binance 24-hour ticker · FX: ECB reference rates via Frankfurter · Equities and metals: Stooq daily data · Treasury curve: FRED. Availability and update frequency depend on each source.", color = Color(0xFFB7C0BA), style = MaterialTheme.typography.bodySmall)
+                    Text("Crypto: Binance 24-hour ticker · FX: ECB reference rates via Frankfurter · Equities and commodities: Alpha Vantage (free key) · Treasury curve: FRED. Availability and update frequency depend on each source.", color = Color(0xFFB7C0BA), style = MaterialTheme.typography.bodySmall)
                     OutlinedButton(onClick = onOpenTrades, shape = RoundedCornerShape(24.dp)) { Text("Open trade journal") }
                 }
             }
@@ -193,7 +193,7 @@ fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
             }
         }
         item {
-            Text("Prices are indicative public-feed data, not broker quotes. FX rates are ECB reference rates (not intraday); Stooq quotes and Treasury yields are daily. Provider availability, licensing, symbol coverage and rate limits may change.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Prices are indicative public-feed data, not broker quotes. FX rates are daily reference rates (not intraday); Alpha Vantage equities and Treasury yields are daily/spot observations. Provider availability, licensing, symbol coverage and rate limits may change.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(12.dp))
         }
     }
