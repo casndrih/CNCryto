@@ -30,12 +30,18 @@ jobs:
         with:
           gradle-version: "8.9"
       - name: Assemble and test
-        run: gradle --no-daemon assembleDebug testDebugUnitTest
+        run: gradle --no-daemon assembleDebug assembleRelease testDebugUnitTest
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: CNCryto-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - name: Upload minified release APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CNCryto-release-unsigned-apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
       - name: Publish APK to repository root
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
