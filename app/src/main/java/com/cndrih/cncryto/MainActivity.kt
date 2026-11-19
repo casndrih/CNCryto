@@ -52,6 +52,7 @@ class MainActivity : ComponentActivity() {
             )
             MaterialTheme(colorScheme = if (darkMode) Dark else Light, shapes = shapes) {
                 var tab by remember { mutableIntStateOf(0) }
+                var alphaKeyDraft by remember { mutableStateOf(vault.loadSecret("alpha_vantage_key")) }
                 var symbol by remember { mutableStateOf("BTCUSDT") }
                 val initialProfiles = remember {
                     vault.load().mapIndexed { index, profile ->
@@ -212,6 +213,30 @@ class MainActivity : ComponentActivity() {
                                             onClick = { themeChoice = value; preferences.edit().putString("theme", value).apply() },
                                             shape = SegmentedButtonDefaults.itemShape(index, 3)
                                         ) { Text(label) }
+                                    }
+                                }
+                            }
+                            item {
+                                ElevatedCard(Modifier.fillMaxWidth()) {
+                                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                        Text("Market data provider", style = MaterialTheme.typography.titleMedium)
+                                        Text("Crypto and FX work without a key. Add a free Alpha Vantage key to enable equity index proxies, gold, silver and energy prices. The free tier is limited to 25 requests per day.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        OutlinedTextField(
+                                            value = alphaKeyDraft,
+                                            onValueChange = { alphaKeyDraft = it.trim() },
+                                            label = { Text("Alpha Vantage API key") },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            singleLine = true,
+                                            visualTransformation = PasswordVisualTransformation(),
+                                            shape = RoundedCornerShape(28.dp)
+                                        )
+                                        Button(
+                                            onClick = { vault.saveSecret("alpha_vantage_key", alphaKeyDraft) },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(28.dp)
+                                        ) { Text("Save market data key") }
+                                        Text("Get a free key: www.alphavantage.co/support/#api-key", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text("The key is stored encrypted on this device. Provider usage limits and terms still apply.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
                             }
