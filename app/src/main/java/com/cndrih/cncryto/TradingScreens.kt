@@ -166,7 +166,10 @@ fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
                             color = Color.White, fontWeight = FontWeight.Bold)
                         quote.changePct?.let { Text(String.format(Locale.US, "%+.2f%%", it),
                             color = if (it >= 0) TradeGreen else TradeRed, style = MaterialTheme.typography.labelSmall) }
-                        Text(quote.timestamp.take(10).ifBlank { "No timestamp" }, color = Color(0xFF9BA69E), style = MaterialTheme.typography.labelSmall)
+                        val quoteDate = quote.timestamp.toLongOrNull()?.let {
+                            java.time.Instant.ofEpochMilli(it).toString().take(10)
+                        } ?: quote.timestamp.take(10)
+                        Text(quoteDate.ifBlank { "No timestamp" }, color = Color(0xFF9BA69E), style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
@@ -319,7 +322,8 @@ private fun TradeDetailScreen(
             val loaded = MarketDataRepository.candles(trade.symbol, category)
             candles = loaded
             chartMessage = if (loaded.isEmpty()) "No historical candles available for this instrument." else
-                "Historical OHLC · ${loaded.size} bars · ${if (category == "Crypto") "Binance 1h" else if (category == "Forex") "ECB daily reference" else "Stooq daily"}"
+                (if (category == "Forex") "ECB daily reference-rate history" else "Historical OHLC") +
+                    " · ${loaded.size} bars · ${if (category == "Crypto") "Binance 1h" else if (category == "Forex") "Frankfurter / ECB daily" else "Stooq daily"}"
         } catch (t: Throwable) {
             chartMessage = "Chart data unavailable: ${t.message ?: "provider error"}"
         }
