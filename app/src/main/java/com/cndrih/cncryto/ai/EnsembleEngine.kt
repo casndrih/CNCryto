@@ -38,9 +38,9 @@ class EnsembleEngine(private val providers:List<AIProvider>,private val ledger:A
   val configs=request.providers.filter{it.enabled&&it.apiKey.isNotBlank()};require(configs.isNotEmpty()){"Enable at least one provider"}
   val forecasts=configs.map{cfg->async{runCatching{(providers.firstOrNull()?:error("Provider adapter missing")).predict(cfg,request)}.getOrNull()}}.awaitAll().filterNotNull()
   require(forecasts.isNotEmpty()){"Every provider failed or timed out"}
-  val rows=forecasts.map{f->val w=ledger.reliability(f.providerId).coerceIn(.05,1.0)*f.confidence.coerceIn(.05,1.0);Triple(f,w,when(f.direction){"bullish"->1.0;"bearish"-> -1.0;else->0.0})}
+  val rows=forecasts.map{f->val w=ledger.reliability(f.providerId).coerceIn(0.05,1.0)*f.confidence.coerceIn(0.05,1.0);Triple(f,w,when(f.direction){"bullish"->1.0;"bearish"-> -1.0;else->0.0})}
   val total=rows.sumOf{it.second}.coerceAtLeast(1e-9);val vote=rows.sumOf{it.second*it.third}/total
-  val dir=when{vote>.15->"bullish";vote<-.15->"bearish";else->"neutral"}
+  val dir=when{vote>.15->"bullish";vote < -0.15->"bearish";else->"neutral"}
   val agree=rows.filter{if(dir=="bullish")it.third>0 else if(dir=="bearish")it.third<0 else it.third==0.0}.sumOf{it.second}/total
   val score=rows.sumOf{it.second*it.first.score}/total
   EnsembleResult(dir,score,agree,forecasts.size,forecasts.joinToString(" | "){it.providerId+": "+it.rationale}.take(800),Instant.now().toString())
