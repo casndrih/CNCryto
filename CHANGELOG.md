@@ -29,4 +29,4 @@ This is an initial development version, not a production trading release.
 - Added Python regression tests to GitHub Actions and expanded CI to build debug and minified release variants.
 - Documented the CSV data contract, runtime dependencies and current market-data/broker limitations.
 
-- Updated the Android scientific stack to the current Python 3.13 NumPy 2.3.2 and pandas 2.3.2 wheels.
+- Updated the Android scientific stack to the current Python 3.13 NumPy 1.26.2 and pandas 2.1.3 wheels.
