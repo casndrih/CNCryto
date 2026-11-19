@@ -96,7 +96,7 @@ fun MarketsScreen(onOpenTrades: () -> Unit, modifier: Modifier = Modifier) {
         loading = true
         error = null
         try {
-            quotes = MarketDataRepository.quotes(category)
+            quotes = MarketDataRepository.quotes(category, alphaKey)
             if (category == "Forex" || category == "Equities") {
                 yields = MarketDataRepository.treasuryYields()
             }
@@ -314,12 +314,13 @@ private fun TradeDetailScreen(
             trade.symbol.equals("GOLD", true) || trade.symbol.equals("SILVER", true) -> "Metals"
         else -> "Equities"
     }
+    val alphaKey = remember { ProviderVault(LocalContext.current).loadSecret("alpha_vantage_key") }
     var candles by remember(trade.symbol) { mutableStateOf<List<MarketCandle>>(emptyList()) }
     var displayTrade by remember(trade.id) { mutableStateOf(trade) }
     var chartMessage by remember(trade.symbol) { mutableStateOf("Loading public OHLC data…") }
     LaunchedEffect(trade.symbol, category) {
         try {
-            val loaded = MarketDataRepository.candles(trade.symbol, category)
+            val loaded = MarketDataRepository.candles(trade.symbol, category, alphaKey)
             candles = loaded
             chartMessage = if (loaded.isEmpty()) "No historical candles available for this instrument." else
                 (if (category == "Forex") "ECB daily reference-rate history" else "Historical OHLC") +
@@ -328,7 +329,7 @@ private fun TradeDetailScreen(
             chartMessage = "Chart data unavailable: ${t.message ?: "provider error"}"
         }
         try {
-            val quote = MarketDataRepository.quotes(category).firstOrNull { it.price != null &&
+            val quote = MarketDataRepository.quotes(category, alphaKey).firstOrNull { it.price != null &&
                 (it.symbol.equals(trade.symbol, true) || it.name.equals(trade.symbol, true)) }
             if (quote?.price != null) displayTrade = trade.copy(current = quote.price)
         } catch (_: Throwable) { }
