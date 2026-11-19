@@ -28,7 +28,7 @@ private val Dark = darkColorScheme(
 )
 private val Light = lightColorScheme(
     primary = Color(0xFF5B8500), onPrimary = Color.White, secondary = Color(0xFF00796B),
-    background = Color(0xFFF7F8F4), surface = Color.White, surfaceVariant = Color(0xFFECEF E7),
+    background = Color(0xFFF7F8F4), surface = Color.White, surfaceVariant = Color(0xFFECEFE7),
     onBackground = Color(0xFF171A14), onSurface = Color(0xFF171A14)
 )
 private data class ProviderDraft(val id: Int, val name: String, val endpoint: String, val model: String, val key: String, val enabled: Boolean = true)
@@ -94,6 +94,10 @@ class MainActivity : ComponentActivity() {
                             loadingModels[profile.id] = false
                         }
                     }
+                }
+
+                LaunchedEffect(tab) {
+                    if (tab == 1) profiles.filter { it.key.isNotBlank() && modelOptions[it.id] == null }.forEach { loadModels(it) }
                 }
 
                 Scaffold(
