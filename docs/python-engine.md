@@ -4,7 +4,9 @@ CNCryto bundles the supplied forex_signal_system Python package using Chaquopy. 
 
 ## Build integration
 
-- Chaquopy Gradle plugin: 17.2.0
+- Android Gradle Plugin: 8.9.2
+Gradle: 8.11.1
+Chaquopy Gradle plugin: 17.2.0
 - Embedded Python: 3.13
 - NumPy: 1.26.2
 - pandas: 2.1.3
