@@ -77,6 +77,8 @@ class OpenAiCompatibleProvider : AIProvider {
             val prompt = """Analyse ${request.symbol}, timeframe ${request.timeframe}, horizon ${request.horizon}.
                 |Data note: ${request.market.qualityNote}
                 |Market features supplied: ${request.market.features.size}.
+                |Recent numeric market features in chronological OHLC order: ${request.market.features.takeLast(120).joinToString(", ") { "%.8f".format(java.util.Locale.US, it) }}.
+                |Treat the data-source and frequency note as authoritative. Do not reinterpret daily reference points as intraday candles.
                 |Do not invent prices, candles, news, events or probabilities. If evidence is insufficient,
                 |return neutral with low confidence. Return JSON only with direction (bullish/bearish/neutral),
                 |score (0-100), confidence (0-1), and rationale.""".trimMargin()
