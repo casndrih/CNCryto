@@ -39,7 +39,7 @@ jobs:
           python scripts/prepare_python_engine.py --source forex_signal_system.zip --dest app/src/main/python
           python -m unittest discover -s tests/python -v
       - name: Assemble and test
-        run: gradle --no-daemon assembleDebug assembleRelease testDebugUnitTest
+        run: gradle --no-daemon --stacktrace assembleDebug assembleRelease testDebugUnitTest
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
         with:
