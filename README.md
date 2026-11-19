@@ -6,7 +6,7 @@ Kotlin · Jetpack Compose · Material 3 · Chaquopy Python 3.13 · NumPy · pand
 [![Android CI](https://github.com/casndrih/CNCryto/actions/workflows/android-build.yml/badge.svg)](https://github.com/casndrih/CNCryto/actions/workflows/android-build.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-CNCryto is an Android application foundation for market research, model-assisted forecasts, signal workflows, risk analysis and (planned) backtesting and paper trading. The project is designed around a provider-neutral prediction interface so several AI models can be queried concurrently and their outputs combined.
+CNCryto is an Android application foundation for market research, model-assisted forecasts, signal workflows, risk analysis and historical backtesting, with paper trading planned. The project is designed around a provider-neutral prediction interface so several AI models can be queried concurrently and their outputs combined.
 
 > **Development status: functional analytics MVP, not a live trading system.** The app now bundles the supplied `forex_signal_system` package through Chaquopy, with signal parsing, risk validation, OHLCV CSV regime analysis, historical backtesting and a local SQLite signal journal. Market data is imported by the user; no live feed or broker execution is connected. See [implementation status](docs/IMPLEMENTATION.md).
 
