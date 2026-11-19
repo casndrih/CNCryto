@@ -30,3 +30,5 @@ This is an initial development version, not a production trading release.
 - Documented the CSV data contract, runtime dependencies and current market-data/broker limitations.
 
 - Updated the Android scientific stack to the current Python 3.13 NumPy 1.26.2 and pandas 2.1.3 wheels.
+
+- Upgraded Android Gradle Plugin to 8.9.2 and Gradle to 8.11.1, and disabled parallel task execution to resolve the Chaquopy/Kotlin Gradle state-lock failure.
