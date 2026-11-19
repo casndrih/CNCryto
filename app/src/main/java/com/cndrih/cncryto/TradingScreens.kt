@@ -301,6 +301,31 @@ private fun TradeDetailScreen(
     onModify: (OpenTrade) -> Unit,
     onClose: (OpenTrade) -> Unit
 ) {
+    val category = when {
+        trade.symbol.contains("/") -> "Forex"
+        trade.symbol.uppercase().contains("BTC") || trade.symbol.uppercase().contains("ETH") ||
+            trade.symbol.uppercase().contains("SOL") || trade.symbol.uppercase().contains("XRP") ||
+            trade.symbol.uppercase().endsWith("USDT") -> "Crypto"
+        else -> "Equities"
+    }
+    var candles by remember(trade.symbol) { mutableStateOf<List<MarketCandle>>(emptyList()) }
+    var displayTrade by remember(trade.id) { mutableStateOf(trade) }
+    var chartMessage by remember(trade.symbol) { mutableStateOf("Loading public OHLC data…") }
+    LaunchedEffect(trade.symbol, category) {
+        try {
+            val loaded = MarketDataRepository.candles(trade.symbol, category)
+            candles = loaded
+            chartMessage = if (loaded.isEmpty()) "No historical candles available for this instrument." else
+                "Historical OHLC · ${loaded.size} bars · ${if (category == "Crypto") "Binance 1h" else if (category == "Forex") "ECB daily reference" else "Stooq daily"}"
+        } catch (t: Throwable) {
+            chartMessage = "Chart data unavailable: ${t.message ?: "provider error"}"
+        }
+        try {
+            val quote = MarketDataRepository.quotes(category).firstOrNull { it.price != null &&
+                (it.symbol.equals(trade.symbol, true) || it.name.equals(trade.symbol, true)) }
+            if (quote?.price != null) displayTrade = trade.copy(current = quote.price)
+        } catch (_: Throwable) { }
+    }
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -311,15 +336,15 @@ private fun TradeDetailScreen(
         Card(colors = CardDefaults.cardColors(containerColor = TradePanel), shape = RoundedCornerShape(22.dp)) {
             Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("${trade.side} · ${number(trade.units)} units", color = if (trade.side == "BUY") TradeGreen else TradeRed, fontWeight = FontWeight.SemiBold)
-                Text(number(trade.current), color = Color.White, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
-                Text("Mark price entered in your journal · not a live quote", color = Color(0xFF9BA69E), style = MaterialTheme.typography.bodySmall)
+                Text(number(displayTrade.current), color = Color.White, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
+                Text("Mark price from public data feed when supported · indicative only", color = Color(0xFF9BA69E), style = MaterialTheme.typography.bodySmall)
             }
         }
         Card(colors = CardDefaults.cardColors(containerColor = TradePanel), shape = RoundedCornerShape(22.dp)) {
             Column(Modifier.padding(12.dp)) {
                 Text("Position chart", color = Color.White, fontWeight = FontWeight.SemiBold)
-                Text("Illustrative candles · horizontal levels reflect this trade", color = Color(0xFF9BA69E), style = MaterialTheme.typography.bodySmall)
-                PositionChart(trade, Modifier.fillMaxWidth().height(250.dp))
+                Text(chartMessage, color = Color(0xFF9BA69E), style = MaterialTheme.typography.bodySmall)
+                PositionChart(trade, candles, Modifier.fillMaxWidth().height(250.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("SL  ${number(trade.stop)}", color = TradeRed, style = MaterialTheme.typography.labelSmall)
                     Text("ENTRY  ${number(trade.entry)}", color = Color(0xFF70A7FF), style = MaterialTheme.typography.labelSmall)
@@ -328,23 +353,23 @@ private fun TradeDetailScreen(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard("OPEN P/L", money(trade.pnl), Modifier.weight(1f))
+            MetricCard("OPEN P/L", money(displayTrade.pnl), Modifier.weight(1f))
             MetricCard("RISK / REWARD", "1 : ${String.format(Locale.US, "%.2f", trade.rr)}", Modifier.weight(1f))
             MetricCard("POSITION", number(trade.units), Modifier.weight(1f))
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(onClick = { onClose(trade) }, enabled = trade.status == "OPEN",
+            Button(onClick = { onClose(displayTrade) }, enabled = trade.status == "OPEN",
                 modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = TradeRed),
                 shape = RoundedCornerShape(22.dp)) { Text("Close trade") }
             OutlinedButton(onClick = { onModify(trade) }, enabled = trade.status == "OPEN",
                 modifier = Modifier.weight(1f), shape = RoundedCornerShape(22.dp)) { Text("Modify") }
         }
-        Text("Close trade records the position as closed in this local journal only. It does not send an order to a broker.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("The chart and mark price use public reference feeds where supported. Close and Modify remain local journal actions, not broker orders.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
-private fun PositionChart(trade: OpenTrade, modifier: Modifier = Modifier) {
+private fun PositionChart(trade: OpenTrade, candles: List<MarketCandle>, modifier: Modifier = Modifier) {
     val grid = Color(0xFF39433D)
     Canvas(modifier.background(Color(0xFF111713), RoundedCornerShape(12.dp))) {
         val left = 8f; val right = size.width - 8f; val top = 12f; val bottom = size.height - 12f
@@ -352,26 +377,29 @@ private fun PositionChart(trade: OpenTrade, modifier: Modifier = Modifier) {
             val y = top + (bottom - top) * i / 4f
             drawLine(grid, Offset(left, y), Offset(right, y), 1f)
         }
-        val low = min(trade.stop, min(trade.entry, trade.target))
-        val high = max(trade.stop, max(trade.entry, trade.target))
-        val range = (high - low).coerceAtLeast(abs(high) * 0.0005).toFloat()
+        val dataLow = candles.minOfOrNull { it.low } ?: min(trade.stop, min(trade.entry, trade.target))
+        val dataHigh = candles.maxOfOrNull { it.high } ?: max(trade.stop, max(trade.entry, trade.target))
+        val low = min(dataLow, min(trade.stop, min(trade.entry, trade.target)))
+        val high = max(dataHigh, max(trade.stop, max(trade.entry, trade.target)))
+        val range = (high - low).coerceAtLeast(kotlin.math.abs(high) * 0.00001).toFloat()
         fun y(price: Double) = bottom - ((price - low).toFloat() / range) * (bottom - top)
-        val levels = listOf(trade.stop to TradeRed, trade.entry to Color(0xFF70A7FF), trade.target to TradeGreen)
-        levels.forEach { (price, color) ->
+        listOf(trade.stop to TradeRed, trade.entry to Color(0xFF70A7FF), trade.target to TradeGreen).forEach { (price, color) ->
             val yy = y(price)
             drawLine(color, Offset(left, yy), Offset(right, yy), 2f)
         }
-        // A neutral, illustrative candle pattern; it is deliberately not market history.
-        val values = listOf(.82f,.74f,.78f,.63f,.68f,.54f,.59f,.47f,.52f,.40f,.44f,.36f,.42f,.31f,.35f,.27f,.32f,.22f)
-        val step = (right - left) / (values.size + 1)
-        values.forEachIndexed { i, v ->
-            val x = left + step * (i + 1)
-            val center = top + v * (bottom - top)
-            val up = i % 3 != 0
-            val candle = if (up) TradeGreen else TradeRed
-            val body = 7f
-            drawLine(candle, Offset(x, center - 13f), Offset(x, center + 13f), 2f)
-            drawRect(candle, Offset(x - body / 2, center - 6f), androidx.compose.ui.geometry.Size(body, 12f))
+        if (candles.isNotEmpty()) {
+            val visible = candles.takeLast(65)
+            val step = (right - left) / (visible.size + 1)
+            visible.forEachIndexed { i, candle ->
+                val x = left + step * (i + 1)
+                val up = candle.close >= candle.open
+                val color = if (up) TradeGreen else TradeRed
+                drawLine(color, Offset(x, y(candle.high)), Offset(x, y(candle.low)), 2f)
+                val topBody = min(y(candle.open), y(candle.close))
+                val bottomBody = max(y(candle.open), y(candle.close))
+                drawRect(color, Offset(x - max(2f, step * 0.28f), topBody),
+                    androidx.compose.ui.geometry.Size(max(4f, step * 0.56f), max(2f, bottomBody - topBody)))
+            }
         }
     }
 }
