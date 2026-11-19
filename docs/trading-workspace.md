@@ -1,43 +1,44 @@
 # Trading workspace and public market data
 
-The Android app includes dedicated Markets and Trades destinations. Market data is retrieved from public endpoints; the app does not scrape rendered finance webpages.
+The Android app includes Markets and Trades destinations. Data comes from public endpoints and free-key APIs; it does not scrape rendered finance webpages.
 
-## Public data sources
+## Data sources
 
-| Asset class | Source | Data exposed in the app | Update characteristics |
+| Asset class | Provider | Data | Access/freshness |
 |---|---|---|---|
-| Crypto | Binance public market-data-only REST API | 24-hour ticker and hourly candlesticks | Exchange market data; polling on screen load/manual refresh |
-| Forex | Frankfurter API backed by European Central Bank reference rates | Major-pair reference quotes and daily rate history | Daily reference rates, not intraday/live broker prices |
-| Equity index proxies | Stooq public CSV | SPY, QQQ, DIA and IWM ETF daily close/history | Daily data; ETF proxies, not the official index calculation |
-| Metals/energy | Stooq public CSV | Gold, silver and selected energy symbols where available | Daily data; symbol coverage may vary |
-| U.S. Treasury curve | FRED public CSV graph endpoint | 1-month, 1-year, 2-year, 5-year, 10-year and 30-year series | Daily constant-maturity observations; latest date is shown |
+| Crypto | Binance market-data-only REST API | 24-hour ticker and hourly candles | No key; exchange market data |
+| Forex | Frankfurter / central-bank reference rates | Major-pair quotes and daily history | No key; daily reference rates, not intraday broker quotes |
+| Equity index proxies | Alpha Vantage | SPY, QQQ, DIA, IWM daily OHLC | Free API key; 25 requests/day free tier |
+| Gold and silver | Alpha Vantage | Spot snapshots and daily history | Free API key; subject to quota |
+| WTI and Brent | Alpha Vantage | Daily commodity observations | Free API key; subject to quota |
+| U.S. Treasury curve | FRED public graph CSV endpoint | 1-month, 1-year, 2-year, 5-year, 10-year and 30-year yields | Daily observations |
 
-No API key is required for these default sources. Public endpoints can change, throttle requests, or be unavailable in some regions. The UI displays unavailable states rather than inventing prices. Binance market data is exchange-specific. Frankfurter/ECB FX values are reference rates. Stooq symbols are public daily CSV feeds and coverage is not guaranteed. Treasury series are U.S.-specific.
+Binance and Frankfurter work without credentials. The optional Alpha Vantage key is configured under Settings > Market data provider and stored in encrypted app preferences. The app caches quotes and candles in memory for five minutes. Alpha Vantage's free tier is limited to 25 requests/day; real-time and 15-minute delayed U.S. equity entitlements are premium-only. Check current provider terms and display rights before commercial redistribution.
 
 ## Markets
-- Forex, crypto, metals, and equity watchlist categories.
-- Searchable instruments, source labels, timestamps, refresh action, and percent changes when the source provides them.
-- Treasury yield curve values from FRED.
-- Values are indicative reference data, not broker bid/ask quotes or guaranteed executable prices.
+- Forex, crypto, metals and equities categories.
+- Searchable watchlists, source labels, timestamps, refresh, and percent changes where provided.
+- U.S. Treasury yield curve from FRED's public graph CSV output.
+- Equity index cards use ETF proxies (SPY/QQQ/DIA/IWM), not official index calculations.
+- Prices are indicative reference data, not guaranteed executable bid/ask prices.
 
 ## Trades
 - Create and persist local trade-journal positions.
-- Record instrument, BUY/SELL side, position units, entry, current/mark price, stop loss, and take profit.
-- Validate directional price levels before saving (BUY: SL < Entry < TP; SELL: TP < Entry < SL).
-- Open-position list, estimated P/L, risk/reward, position size, and closed-trade history.
-- Trade detail view with public historical candles where available and Entry/SL/TP overlays.
-- The displayed mark price is refreshed from a matching public feed where supported.
-- Close changes the local journal status only. It does not place, modify, or close a broker order.
+- Record instrument, BUY/SELL side, units, entry, current/mark price, stop loss and take profit.
+- Validate directional levels (BUY: SL < Entry < TP; SELL: TP < Entry < SL).
+- Open-position list, estimated P/L, risk/reward, position size and closed-trade history.
+- Trade detail view uses public historical candles where available and overlays Entry/SL/TP.
+- Mark price refreshes from a matching public feed where supported.
+- Close and Modify change the local journal only; they do not send broker orders.
 
 ## AI analysis context
-The multi-provider analysis request retrieves public historical bars for the requested symbol and supplies recent OHLC values plus the data-source and frequency note to configured AI providers. If a source is unavailable, the prompt explicitly says no market features were supplied and instructs models not to invent market facts.
+The multi-provider analysis request retrieves public historical bars and supplies recent OHLC values plus source/frequency notes to configured AI providers. If a source is unavailable, the prompt says no market features were supplied and instructs models not to invent market facts. Crypto analysis uses hourly bars; FX, equities and commodity analysis use daily/reference data.
 
 ## Important limitations
-- No broker account, order placement, execution API, or private account balance.
-- No websocket streaming; market data refreshes when the screen loads or the user taps refresh.
-- FX history is daily ECB reference-rate history, not intraday OHLC. The chart should be interpreted as daily reference-rate points.
-- Equity index cards use ETF proxies (SPY/QQQ/DIA/IWM), not the official indices.
-- Stooq symbol coverage for metals and energy can vary.
-- The trade journal is stored locally and is not synced across devices.
-- P/L is a simple price-difference estimate and does not yet account for pip value, contract specifications, account-currency conversion, spread, swap, commission, leverage, or margin.
-- Public feed access, licensing, display permissions, and rate limits are governed by each source's terms. Verify the relevant terms before commercial redistribution.
+- No broker account, order placement, execution API or private account balance.
+- No WebSocket streaming; market data refreshes on screen load or manual refresh.
+- FX history is daily central-bank reference-rate history, not intraday OHLC.
+- Free Alpha Vantage quota can be exhausted; five-minute in-memory caching reduces but does not eliminate calls.
+- No claim that free market-data plans permit commercial redistribution; verify current provider terms and exchange display rights.
+- The trade journal is local and not synced across devices.
+- P/L is a simple price-difference estimate and does not yet account for pip value, contract specifications, account-currency conversion, spread, swap, commission, leverage or margin.
